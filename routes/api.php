@@ -25,6 +25,16 @@ Route::group(['middleware'  => 'auth:sanctum'], function () {
     Route::post('logout', [AuthController::class, 'logout']);
 });
 
+Route::group(['prefix'  => 'user', 'as' => 'user.', 'middleware' => 'auth:sanctum'], function () {
+    Route::controller(RoleController::class)->group(function () {
+        Route::get('/', 'index');
+        Route::post('/store', 'store');
+        Route::get('/edit/{user}', 'edit');
+        Route::put('/update/{user}', 'update');
+        Route::delete('/delete/{user}', 'delete');
+    });
+});
+
 Route::group(['prefix'  => 'role', 'as' => 'role.', 'middleware' => 'auth:sanctum'], function () {
     Route::controller(RoleController::class)->group(function () {
         Route::get('/', 'index');
