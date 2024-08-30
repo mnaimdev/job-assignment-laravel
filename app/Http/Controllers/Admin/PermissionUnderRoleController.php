@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Helpers\SendingResponse;
 use App\Http\Controllers\Controller;
 use App\Models\Admin\Admin;
 use App\Models\User;
@@ -15,28 +16,11 @@ class PermissionUnderRoleController extends Controller
     public function index()
     {
         try {
-            $roles = Role::all();
+            $roles = Role::with('permissions')->get();
 
-            return view('admin.permission_under_role.index', [
-                'roles'         => $roles,
-            ]);
+            return SendingResponse::response('success', 'Permission Under Role', $roles, '', 200);
         } catch (\Exception $e) {
-            return $e->getMessage();
-        }
-    }
-
-    public function create()
-    {
-        try {
-            $roles = Role::all();
-            $groupNames = User::getPermisionGroups();
-
-            return view('admin.permission_under_role.create', [
-                'roles'             => $roles,
-                'groupNames'        => $groupNames,
-            ]);
-        } catch (\Exception $e) {
-            return $e->getMessage();
+            return SendingResponse::handleException('error', $e->getMessage());
         }
     }
 
@@ -58,27 +42,22 @@ class PermissionUnderRoleController extends Controller
                 DB::table('role_has_permissions')->insert($data);
             }
 
-            return back()->with('success', 'Permission assigned into role');
+            $result = DB::table('role_has_permissions')->where('role_id', $request->role_id)->get();
+
+            return SendingResponse::response('success', 'Permission Added Into Role Successfully', $result, '', 200);
         } catch (\Exception $e) {
-            return $e->getMessage();
+            return SendingResponse::handleException('error', $e->getMessage());
         }
     }
 
     public function edit($roleId)
     {
         try {
-            $groupNames = Admin::getPermisionGroups();
-            $roles = Role::all();
             $roleHasPermissions = DB::table('role_has_permissions')->where('role_id', $roleId)->get();
 
-            return view('admin.permission_under_role.edit', [
-                'groupNames'            => $groupNames,
-                'roleId'                => $roleId,
-                'roles'                 => $roles,
-                'roleHasPermissions'    => $roleHasPermissions,
-            ]);
+            return SendingResponse::response('success', 'Permission Under Role',  $roleHasPermissions, '', 200);
         } catch (\Exception $e) {
-            return $e->getMessage();
+            return SendingResponse::handleException('error', $e->getMessage());
         }
     }
 
@@ -102,20 +81,22 @@ class PermissionUnderRoleController extends Controller
                 DB::table('role_has_permissions')->insert($data);
             }
 
-            return back()->with('success', 'Permission updated into role');
+            $result = DB::table('role_has_permissions')->where('role_id', $roleId)->get();
+
+            return SendingResponse::response('success', 'Updated Successfully', $result, '', 200);
         } catch (\Exception $e) {
-            return $e->getMessage();
+            return SendingResponse::handleException('error', $e->getMessage());
         }
     }
 
-    public function destroy($roleId)
+    public function delete($roleId)
     {
         try {
             DB::table('role_has_permissions')->where('role_id', $roleId)->delete();
 
-            return back()->with('success', 'Permission removed from role');
+            return SendingResponse::response('success', 'Permission Under Role Deleted Successfully', '', '', 200);
         } catch (\Exception $e) {
-            return $e->getMessage();
+            return SendingResponse::handleException('error', $e->getMessage());
         }
     }
 }

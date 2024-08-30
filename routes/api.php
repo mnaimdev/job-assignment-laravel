@@ -47,22 +47,20 @@ Route::group(['prefix'  => 'permission', 'as' => 'permission.'], function () {
 
 Route::group(['prefix'  => 'permission_under_role', 'as' => 'permission_under_role.'], function () {
     Route::controller(PermissionUnderRoleController::class)->group(function () {
-        Route::get('/', 'index')->name('index');
-        Route::post('/store', 'store')->name('store');
-        Route::get('/create', 'create')->name('create');
-        Route::get('/edit/{roleId}', 'edit')->name('edit');
-        Route::put('/update/{roleId}', 'update')->name('update');
-        Route::get('/destroy/{roleId}', 'destroy')->name('destroy');
+        Route::get('/', 'index');
+        Route::post('/store', 'store');
+        Route::get('/edit/{roleId}', 'edit');
+        Route::put('/update/{roleId}', 'update');
+        Route::delete('/delete/{roleId}', 'delete');
     });
 });
 
-
 Route::group(['prefix'  => 'assign_role', 'as' => 'assign_role.'], function () {
     Route::controller(AssignRoleController::class)->group(function () {
-        Route::get('/', 'index')->name('index');
-        Route::post('/store', 'store')->name('store');
-        Route::get('/edit/{userId}', 'edit')->name('edit');
-        Route::put('/update/{userId}', 'update')->name('update');
-        Route::get('/destroy/{userId}', 'destroy')->name('destroy');
+        Route::get('/', 'index');
+        Route::post('/store', 'store');
+        Route::get('/edit/{userId}', 'edit');
+        Route::put('/update/{userId}', 'update');
+        Route::get('/delete/{userId}', 'delete');
     });
 });
