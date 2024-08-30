@@ -38,7 +38,6 @@ Route::group(['prefix'  => 'permission', 'as' => 'permission.'], function () {
     Route::controller(PermissionController::class)->group(function () {
         Route::get('/', 'index')->name('index');
         Route::post('/store', 'store')->name('store');
-        Route::get('/create', 'create')->name('create');
         Route::get('/edit/{permission}', 'edit')->name('edit');
         Route::put('/update/{permission}', 'update')->name('update');
         Route::delete('/delete/{permission}', 'delete')->name('delete');

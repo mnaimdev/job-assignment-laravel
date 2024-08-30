@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Helpers\SendingResponse;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -14,48 +15,34 @@ class PermissionController extends Controller
     {
         try {
             $permissions = Permission::orderBy('id', 'DESC')->get();
-            return view('admin.permission.index', [
-                'permissions'      => $permissions,
-            ]);
-        } catch (\Exception $e) {
-            return $e->getMessage();
-        }
-    }
 
-    public function create()
-    {
-        try {
-            return view('admin.permission.create');
+            return SendingResponse::response('success', 'Permission Lists', $permissions, '', 200);
         } catch (\Exception $e) {
-            return $e->getMessage();
+            return SendingResponse::handleException('error', $e->getMessage());
         }
     }
 
     public function store(Request $request)
     {
         $data = $request->validate([
-            'name'              => 'required|unique:permissions,name',
-            'group_name'        => 'required',
-
+            'name'          => 'required|unique:permissions,name',
         ]);
 
         try {
-            Permission::create($data);
+            $permission = Permission::create($data);
 
-            return back()->with('success', 'Created Successfully');
+            return SendingResponse::response('success', 'Created Successfully', $permission, '', 200);
         } catch (\Exception $e) {
-            return $e->getMessage();
+            return SendingResponse::handleException('error', $e->getMessage());
         }
     }
 
     public function edit(Permission $permission)
     {
         try {
-            return view('admin.permission.edit', [
-                'permission'            => $permission,
-            ]);
+            return SendingResponse::response('success', 'Permission', $permission, '', 200);
         } catch (\Exception $e) {
-            return $e->getMessage();
+            return SendingResponse::handleException('error', $e->getMessage());
         }
     }
 
@@ -63,15 +50,14 @@ class PermissionController extends Controller
     {
         $data = $request->validate([
             'name'              => 'required|unique:permissions,name,' . $permission->id,
-            'group_name'        => 'required',
         ]);
 
         try {
             $permission->update($data);
 
-            return redirect()->route('admin.permission.index')->with('success', 'Updated Successfully');
+            return SendingResponse::response('success', 'Updated Successfully', $permission, '', 200);
         } catch (\Exception $e) {
-            return $e->getMessage();
+            return SendingResponse::handleException('error', $e->getMessage());
         }
     }
 }
