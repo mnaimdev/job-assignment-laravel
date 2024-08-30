@@ -61,6 +61,6 @@ Route::group(['prefix'  => 'assign_role', 'as' => 'assign_role.'], function () {
         Route::post('/store', 'store');
         Route::get('/edit/{userId}', 'edit');
         Route::put('/update/{userId}', 'update');
-        Route::get('/delete/{userId}', 'delete');
+        Route::delete('/delete/{userId}', 'delete');
     });
 });
