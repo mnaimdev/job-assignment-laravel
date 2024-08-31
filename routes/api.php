@@ -5,10 +5,11 @@ use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\PermissionUnderRoleController;
 use App\Http\Controllers\Admin\RoleController;
+use App\Http\Controllers\Admin\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/user', function (Request $request) {
+Route::get('/auth/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
@@ -26,7 +27,7 @@ Route::group(['middleware'  => 'auth:sanctum'], function () {
 });
 
 Route::group(['prefix'  => 'user', 'as' => 'user.', 'middleware' => 'auth:sanctum'], function () {
-    Route::controller(RoleController::class)->group(function () {
+    Route::controller(UserController::class)->group(function () {
         Route::get('/', 'index');
         Route::post('/store', 'store');
         Route::get('/edit/{user}', 'edit');
