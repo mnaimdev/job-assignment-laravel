@@ -17,9 +17,6 @@ Route::get('/auth/user', function (Request $request) {
 Route::controller(AuthController::class)->group(function () {
     Route::post('register', 'register');
     Route::post('login', 'login');
-
-    Route::post('forgot-password', 'forgotPassword');
-    Route::post('reset-password', 'resetPassword');
 });
 
 Route::group(['middleware'  => 'auth:sanctum'], function () {
@@ -42,6 +39,7 @@ Route::group(['prefix'  => 'role', 'as' => 'role.', 'middleware' => 'auth:sanctu
         Route::post('/store', 'store');
         Route::get('/edit/{role}', 'edit');
         Route::put('/update/{role}', 'update');
+        Route::delete('/delete/{role}', 'delete');
     });
 });
 

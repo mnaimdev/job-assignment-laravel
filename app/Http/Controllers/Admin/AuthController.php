@@ -20,7 +20,14 @@ class AuthController extends Controller
         $data = $request->validate([
             'name'      => 'required',
             'email'     => 'required|unique:users,email',
-            'password'  => 'required',
+            'password'      => [
+                'required',
+                'min:8',
+                'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/'
+            ]
+
+        ], [
+            'password.regex'  => 'Password must contain one capital letter, one small letter, one number, one special character and minimum 8 characters long'
         ]);
 
         try {
@@ -61,69 +68,5 @@ class AuthController extends Controller
         $request->user()->tokens()->delete();
 
         return SendingResponse::response('success', 'Logout Successfully', '', '', 200);
-    }
-
-
-    public function forgotPassword(Request $request)
-    {
-        $request->validate([
-            'email'             => 'required',
-        ]);
-
-        try {
-            if (User::where('email', $request->email)->exists()) {
-                $user = User::where('email', $request->email)->first();
-
-                $otp = rand(111111, 999999);
-                Otp::where('user_id', $user->id)->delete();
-
-                Otp::create([
-                    'user_id'               => $user->id,
-                    'otp'                   => $otp,
-                    'expired_at'            => Carbon::now()->addMinute(5),
-                ]);
-
-                Mail::to($request->email)->send(new PasswordResetEmail($user->id, $user->email, $otp));
-
-                return SendingResponse::response('success', 'We have send you a email to reset your password', '', '', 200);
-            } else {
-                return SendingResponse::handleException('error', 'Incorrect Email Address');
-            }
-        } catch (\Exception $e) {
-            return SendingResponse::handleException('error', $e->getMessage());
-        }
-    }
-
-    public function resetPassword(Request $request)
-    {
-        $request->validate([
-            'password'      => 'required',
-            'otp'           => 'required',
-        ]);
-
-        try {
-            $otp = $request->otp;
-
-            if (Otp::where('otp', $otp)->exists()) {
-                $selectedOtp = Otp::where('otp', $otp)->firstOrFail();
-
-                if (Carbon::now()->isAfter($selectedOtp->expired_at)) {
-                    return SendingResponse::handleException('error', 'Otp expired!');
-                }
-
-                $user = User::findOrFail($selectedOtp->user_id);
-                $user->update([
-                    'password'      => Hash::make($request->password),
-                ]);
-
-                Otp::where('otp', $otp)->delete();
-
-                return SendingResponse::response('success', 'Password Reset Successful', '', '', 200);
-            } else {
-                return SendingResponse::handleException('error', 'Wrong otp code!');
-            }
-        } catch (\Exception $e) {
-            return SendingResponse::handleException('error', $e->getMessage());
-        }
     }
 }

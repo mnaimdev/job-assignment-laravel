@@ -60,4 +60,15 @@ class PermissionController extends Controller
             return SendingResponse::handleException('error', $e->getMessage());
         }
     }
+
+    public function delete(Permission $permission)
+    {
+        try {
+            $permission->delete();
+
+            return SendingResponse::response('success', 'Deleted Successfully', '', '', 200);
+        } catch (\Exception $e) {
+            return SendingResponse::handleException('error', $e->getMessage());
+        }
+    }
 }

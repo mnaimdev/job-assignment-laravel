@@ -7,6 +7,7 @@ use App\Helpers\SendingResponse;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
@@ -14,7 +15,7 @@ class UserController extends Controller
     public function index()
     {
         try {
-            $users = User::all();
+            $users = User::where('id', '!=', Auth::id())->get();
 
             return SendingResponse::response('success', 'User Lists', $users, '', 200);
         } catch (\Exception $e) {
@@ -26,7 +27,6 @@ class UserController extends Controller
     {
         $data = $request->validate([
             'name'      => 'required',
-            'role'      => 'required',
             'email'     => 'required|unique:users,email,',
             'password'  => [
                 'required',
@@ -34,7 +34,7 @@ class UserController extends Controller
                 'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/'
             ]
         ], [
-            'password.regex'  => 'Password must contain one capital letter, one small letter, one number, one special character'
+            'password.regex'  => 'Password must contain one capital letter, one small letter, one number, one special character and minimum 8 characters long'
         ]);
 
         try {
@@ -60,7 +60,6 @@ class UserController extends Controller
     {
         $data = $request->validate([
             'name'          => 'required',
-            'role'          => 'required',
             'email'         => 'required|unique:users,email,' . $user->id,
             'password'      => [
                 'required',
@@ -68,7 +67,7 @@ class UserController extends Controller
                 'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/'
             ]
         ], [
-            'password.regex'  => 'Password must contain one uppercase, one lowercase, one number, one special character'
+            'password.regex'  => 'Password must contain one capital letter, one small letter, one number, one special character and minimum 8 characters long'
         ]);
 
         try {

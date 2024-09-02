@@ -30,6 +30,7 @@ class RoleController extends Controller
         ]);
 
         try {
+            $data['guard_name'] = 'web';
             $role = Role::create($data);
 
             return SendingResponse::response('success', 'Created Successfully', $role, '', 200);
@@ -51,13 +52,24 @@ class RoleController extends Controller
     {
         $data = $request->validate([
             'name'          => 'required|unique:roles,name,' . $role->id,
-            'guard_name'    => 'web',
         ]);
 
         try {
+            $data['guard_name'] = 'web';
             $role->update($data);
 
             return SendingResponse::response('success', 'Updated Successfully', $data, '', 200);
+        } catch (\Exception $e) {
+            return SendingResponse::handleException('error', $e->getMessage());
+        }
+    }
+
+    public function delete(Request $request, Role $role)
+    {
+        try {
+            $role->delete();
+
+            return SendingResponse::response('success', 'Deleted Successfully', '', '', 200);
         } catch (\Exception $e) {
             return SendingResponse::handleException('error', $e->getMessage());
         }

@@ -51,8 +51,11 @@ class PermissionUnderRoleController extends Controller
     {
         try {
             // Find the role by ID and load its associated permissions
-            $role = Role::findOrFail($roleId);
-            $permissions = $role->permissions()->get();
+            // $role = Role::findOrFail($roleId);
+            // $permissions = $role->permissions()->get();
+
+            $permissions = DB::table('role_has_permissions')->where('role_id', $roleId)->get();
+
 
             return SendingResponse::response('success', 'Permissions Under Role', $permissions, '', 200);
         } catch (\Exception $e) {
