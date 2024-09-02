@@ -92,4 +92,15 @@ class UserController extends Controller
             return SendingResponse::handleException('error', $e->getMessage());
         }
     }
+
+    public function profile()
+    {
+        try {
+            $user = Auth::user();
+
+            return SendingResponse::response('success', 'Logged In User', $user, '', 200);
+        } catch (\Exception $e) {
+            return SendingResponse::handleException('error', $e->getMessage());
+        }
+    }
 }
