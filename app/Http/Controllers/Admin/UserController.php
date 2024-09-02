@@ -82,6 +82,13 @@ class UserController extends Controller
     public function delete(User $user)
     {
         try {
+            if ($user->hasRole('Admin')) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Cannot delete the last Admin. Please assign the Admin role to another user before deletion.',
+                ], 403);
+            }
+
             if (!empty($user->image)) {
                 ImageHelper::removeImage($user->image, '/uploads/user/');
             }
