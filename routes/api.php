@@ -27,6 +27,7 @@ Route::group(['prefix'  => 'user', 'as' => 'user.', 'middleware' => 'auth:sanctu
         Route::put('/update/{user}', 'update');
         Route::delete('/delete/{user}', 'delete');
         Route::get('/profile', 'profile');
+        Route::get('/all', 'userAll');
     });
 });
 
@@ -42,11 +43,12 @@ Route::group(['prefix'  => 'role', 'as' => 'role.', 'middleware' => 'auth:sanctu
 
 Route::group(['prefix'  => 'permission', 'as' => 'permission.'], function () {
     Route::controller(PermissionController::class)->group(function () {
-        Route::get('/', 'index')->name('index');
-        Route::post('/store', 'store')->name('store');
-        Route::get('/edit/{permission}', 'edit')->name('edit');
-        Route::put('/update/{permission}', 'update')->name('update');
-        Route::delete('/delete/{permission}', 'delete')->name('delete');
+        Route::get('/', 'index');
+        Route::post('/store', 'store');
+        Route::get('/edit/{permission}', 'edit');
+        Route::put('/update/{permission}', 'update');
+        Route::delete('/delete/{permission}', 'delete');
+        Route::get('/user', 'permissionUser');
     });
 });
 

@@ -6,6 +6,7 @@ use App\Helpers\SendingResponse;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
@@ -67,6 +68,19 @@ class PermissionController extends Controller
             $permission->delete();
 
             return SendingResponse::response('success', 'Deleted Successfully', '', '', 200);
+        } catch (\Exception $e) {
+            return SendingResponse::handleException('error', $e->getMessage());
+        }
+    }
+
+    public function permissionUser()
+    {
+        try {
+            // Get the authenticated user
+            $user = Auth::guard('sanctum')->user();
+            $permissions = $user->getAllPermissions()->pluck('name');
+
+            return SendingResponse::response('success', 'User Permissions', $permissions, '', 200);
         } catch (\Exception $e) {
             return SendingResponse::handleException('error', $e->getMessage());
         }

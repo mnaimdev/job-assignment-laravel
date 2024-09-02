@@ -103,4 +103,15 @@ class UserController extends Controller
             return SendingResponse::handleException('error', $e->getMessage());
         }
     }
+
+    public function userAll()
+    {
+        try {
+            $users = User::all();
+
+            return SendingResponse::response('success', 'User Lists', $users, '', 200);
+        } catch (\Exception $e) {
+            return SendingResponse::handleException('error', $e->getMessage());
+        }
+    }
 }
