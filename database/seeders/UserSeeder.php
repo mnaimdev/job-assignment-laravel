@@ -34,12 +34,14 @@ class UserSeeder extends Seeder
                 "created_at" => "2024-09-02 19:24:34",
                 "updated_at" => "2024-09-02 19:24:34",
             ),
+
+            // admin role
             array(
                 "id" => 11,
-                "name" => "Mir Faisal",
-                "email" => "mirfaisal08@gmail.com",
+                "name" => "Admin User",
+                "email" => "admin@gmail.com",
                 "email_verified_at" => NULL,
-                "password" => 'Faisal1234*#',
+                "password" => 'Admin1234*',
                 "remember_token" => NULL,
                 "created_at" => "2024-09-02 20:31:18",
                 "updated_at" => "2024-09-02 20:31:18",
