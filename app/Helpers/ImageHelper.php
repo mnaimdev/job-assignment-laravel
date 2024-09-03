@@ -10,31 +10,19 @@ use Illuminate\Support\Str;
 
 class ImageHelper
 {
-    public static function saveImage($file, $path)
+    public static function image($file, $path)
     {
-        // $image = $file;
-        // $extension = $image->getClientOriginalExtension();
-        // $fileName = rand(111111, 9999999) . '.' . $extension;
-        // $imagePath = $image->storeAs($path, $fileName);
+        $image = $file;
+        $extension = $image->getClientOriginalExtension();
+        $fileName = 'media_' . rand(111111, 999999) . '.' . $extension;
+        $image->move(public_path($path), $fileName);
 
-        // return $imagePath;
-
-        $manager = new ImageManager(new Driver());
-        $base64Image = str_replace('data:base64Image/jpg;base64,', '', $file);
-        $base64Image = str_replace(' ', '+', $base64Image);
-
-        $imageName = Str::random(10) . '_' . date('YmdHis') . '.' . 'jpg';
-
-        $image = $manager->read(base64_decode($base64Image));
-        $image->encode(new AutoEncoder(quality: 60));
-        $image->save(public_path($path . $imageName));
-
-        return $path . $imageName;  // uploads/brand/imageName.jpg
+        return $fileName;
     }
 
-    public static function removeImage($file)
+    public static function removeImage($image, $path)
     {
-        // Storage::disk('public')->delete($path, $file);
-        unlink(public_path($file));
+        $deletedFrom = public_path($path . $image);
+        unlink($deletedFrom);
     }
 }

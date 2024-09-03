@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Helpers\SendingResponse;
 use App\Http\Controllers\Controller;
 use App\Models\Admin\Admin;
 use App\Models\User;
@@ -15,28 +16,11 @@ class PermissionUnderRoleController extends Controller
     public function index()
     {
         try {
-            $roles = Role::all();
+            $roles = Role::with('permissions')->get();
 
-            return view('admin.permission_under_role.index', [
-                'roles'         => $roles,
-            ]);
+            return SendingResponse::response('success', 'Permission Under Role', $roles, '', 200);
         } catch (\Exception $e) {
-            return $e->getMessage();
-        }
-    }
-
-    public function create()
-    {
-        try {
-            $roles = Role::all();
-            $groupNames = User::getPermisionGroups();
-
-            return view('admin.permission_under_role.create', [
-                'roles'             => $roles,
-                'groupNames'        => $groupNames,
-            ]);
-        } catch (\Exception $e) {
-            return $e->getMessage();
+            return SendingResponse::handleException('error', $e->getMessage());
         }
     }
 
@@ -44,78 +28,78 @@ class PermissionUnderRoleController extends Controller
     {
         $request->validate([
             'role_id'       => 'required',
-            'permission_id' => 'required',
+            'permission_id' => 'required|array',
         ]);
 
         try {
-            $data = array();
-            $permissions = $request->permission_id;
+            DB::transaction(function () use ($request) {
+                $role = Role::findOrFail($request->role_id);
 
-            foreach ($permissions as $permission) {
-                $data['role_id']            = $request->role_id;
-                $data['permission_id']      = $permission;
+                // Sync permissions with the role
+                $role->syncPermissions($request->permission_id);
+            });
 
-                DB::table('role_has_permissions')->insert($data);
-            }
+            $result = DB::table('role_has_permissions')->where('role_id', $request->role_id)->get();
 
-            return back()->with('success', 'Permission assigned into role');
+            return SendingResponse::response('success', 'Permissions Assigned to Role Successfully', $result, '', 200);
         } catch (\Exception $e) {
-            return $e->getMessage();
+            return SendingResponse::handleException('error', $e->getMessage());
         }
     }
 
     public function edit($roleId)
     {
         try {
-            $groupNames = Admin::getPermisionGroups();
-            $roles = Role::all();
-            $roleHasPermissions = DB::table('role_has_permissions')->where('role_id', $roleId)->get();
+            // Find the role by ID and load its associated permissions
+            // $role = Role::findOrFail($roleId);
+            // $permissions = $role->permissions()->get();
 
-            return view('admin.permission_under_role.edit', [
-                'groupNames'            => $groupNames,
-                'roleId'                => $roleId,
-                'roles'                 => $roles,
-                'roleHasPermissions'    => $roleHasPermissions,
-            ]);
+            $permissions = DB::table('role_has_permissions')->where('role_id', $roleId)->get();
+
+
+            return SendingResponse::response('success', 'Permissions Under Role', $permissions, '', 200);
         } catch (\Exception $e) {
-            return $e->getMessage();
+            return SendingResponse::handleException('error', $e->getMessage());
         }
     }
+
 
     public function update(Request $request, $roleId)
     {
         $request->validate([
-            'permission_id' => 'required',
+            'permission_id' => 'required|array',
         ]);
 
         try {
-            $data = array();
-            $permissions = $request->permission_id;
+            DB::transaction(function () use ($request, $roleId) {
+                $role = Role::findOrFail($roleId);
 
-            // delete previous permissions and roles
-            DB::table('role_has_permissions')->where('role_id', $roleId)->delete();
+                // Sync permissions with the role, replacing the previous ones
+                $role->syncPermissions($request->permission_id);
+            });
 
-            foreach ($permissions as $permission) {
-                $data['role_id']            = $roleId;
-                $data['permission_id']      = $permission;
+            $result = DB::table('role_has_permissions')->where('role_id', $roleId)->get();
 
-                DB::table('role_has_permissions')->insert($data);
-            }
-
-            return back()->with('success', 'Permission updated into role');
+            return SendingResponse::response('success', 'Updated Successfully', $result, '', 200);
         } catch (\Exception $e) {
-            return $e->getMessage();
+            return SendingResponse::handleException('error', $e->getMessage());
         }
     }
 
-    public function destroy($roleId)
+
+    public function delete($roleId)
     {
         try {
-            DB::table('role_has_permissions')->where('role_id', $roleId)->delete();
+            DB::transaction(function () use ($roleId) {
+                $role = Role::findOrFail($roleId);
 
-            return back()->with('success', 'Permission removed from role');
+                // Remove all permissions from the role
+                $role->syncPermissions([]);
+            });
+
+            return SendingResponse::response('success', 'Permissions Under Role Deleted Successfully', '', '', 200);
         } catch (\Exception $e) {
-            return $e->getMessage();
+            return SendingResponse::handleException('error', $e->getMessage());
         }
     }
 }

@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Helpers\SendingResponse;
 use App\Http\Controllers\Controller;
-use App\Models\Admin\Admin;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -15,103 +15,106 @@ class AssignRoleController extends Controller
     public function index()
     {
         try {
-            $users = Admin::all();
+            // Eager load roles with the users
+            $users = User::with('roles')->get();
 
-            return view('admin.assign_role.index', [
-                'users'         => $users,
-            ]);
+            // Map the users to include roles
+            $userWithRoles = $users->map(function ($user) {
+                return [
+                    'id'    => $user->id,
+                    'name'  => $user->name,
+                    'roles' => $user->getRoleNames(),
+                ];
+            });
+
+            return SendingResponse::response('success', 'Assigned Users', $userWithRoles, '', 200);
         } catch (\Exception $e) {
-            return $e->getMessage();
-        }
-    }
-
-    public function create()
-    {
-        try {
-            $roles = Role::all();
-            $users = Admin::all();
-
-            return view('admin.assign_role.create', [
-                'roles'             => $roles,
-                'users'             => $users,
-            ]);
-        } catch (\Exception $e) {
-            return $e->getMessage();
+            return SendingResponse::handleException('error', $e->getMessage());
         }
     }
 
     public function store(Request $request)
     {
-        $request->validate([
-            'role_id'           => 'required',
-            'user_id'           => 'required',
+        $data = $request->validate([
+            'role_id' => 'required',
+            'user_id' => 'required',
         ]);
 
         try {
-            $user = Admin::findOrFail($request->user_id);
+            $user = User::findOrFail($request->user_id);
             $role = Role::findOrFail($request->role_id);
 
-            // delete previous roles
-            $user->syncRoles([]);
-            $user->assignRole($role);
+            // Delete previous roles and assign the new role
+            $user->syncRoles([$role]);
 
-            return back()->with('success', 'Role assigned into user');
+            // Return the user with updated roles
+            $userWithRoles = [
+                'id'    => $user->id,
+                'name'  => $user->name,
+                'roles' => $user->getRoleNames(),
+            ];
+
+            return SendingResponse::response('success', 'Role Assigned to User', $userWithRoles, '', 200);
         } catch (\Exception $e) {
-            return $e->getMessage();
+            return SendingResponse::handleException('error', $e->getMessage());
         }
     }
 
     public function edit($userId)
     {
         try {
-            $roles = Role::all();
-            $users = Admin::all();
+            $user = User::findOrFail($userId);
 
-            // get role id
-            $user = Admin::findOrFail($userId);
-            $roleName = $user->getRoleNames()->first(); // Get the first role name
-            $roleId = \Spatie\Permission\Models\Role::findByName($roleName)->id;
+            // Get the first role name, if any
+            $roleName = $user->getRoleNames()->first();
 
-            return view('admin.assign_role.edit', [
-                'userId'         => $userId,
-                'roleId'         => $roleId,
-                'users'          => $users,
-                'roles'          => $roles,
-            ]);
+            if (!$roleName) {
+                return SendingResponse::response('error', 'No role assigned to this user', null, '', 404);
+            }
+
+            $roleId = Role::findByName($roleName)->id;
+
+            $data = [
+                'user_id' => $userId,
+                'role_id' => $roleId,
+            ];
+
+            return SendingResponse::response('success', 'Assigned Role', $data, '', 200);
         } catch (\Exception $e) {
-            return $e->getMessage();
+            return SendingResponse::handleException('error', $e->getMessage());
         }
     }
 
     public function update(Request $request, $userId)
     {
         $request->validate([
-            'role_id'           => 'required',
+            'role_id' => 'required',
         ]);
 
         try {
-            $user = Admin::findOrFail($userId);
+            $user = User::findOrFail($userId);
             $role = Role::findOrFail($request->role_id);
 
-            // delete previous roles
-            $user->syncRoles([]);
-            $user->assignRole($role);
+            // Sync the user's roles, assigning only the specified role
+            $user->syncRoles([$role]);
 
-            return redirect()->route('admin.assign_role.index')->with('success', 'Role assigned into user');
+            $data = ['user_id' => $user->id, 'role_id' => $role->id];
+
+            return SendingResponse::response('success', 'Role Assigned to User', $data, '', 200);
         } catch (\Exception $e) {
-            return $e->getMessage();
+            return SendingResponse::handleException('error', $e->getMessage());
         }
     }
 
-    public function destroy($userId)
+    public function delete($userId)
     {
         try {
-            $user = Admin::findOrFail($userId);
-            $user->syncRoles([]);
+            $user = User::findOrFail($userId);
+            $user->syncRoles([]); // Clear all roles from the user
 
-            return back()->with('success', 'Role removed from user');
+            return SendingResponse::response('success', 'All roles removed from user successfully', '', '', 200);
         } catch (\Exception $e) {
-            return $e->getMessage();
+            return SendingResponse::handleException('error', $e->getMessage());
         }
     }
 }
