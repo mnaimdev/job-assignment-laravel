@@ -161,6 +161,20 @@ class PermissionSeeder extends Seeder
                 "created_at" => "2024-09-02 21:19:38",
                 "updated_at" => "2024-09-02 21:19:38",
             ),
+            array(
+                "id" => 34,
+                "name" => "delete_role",
+                "guard_name" => "web",
+                "created_at" => "2024-09-02 23:28:26",
+                "updated_at" => "2024-09-02 23:28:26",
+            ),
+            array(
+                "id" => 35,
+                "name" => "delete_permission",
+                "guard_name" => "web",
+                "created_at" => "2024-09-02 23:28:33",
+                "updated_at" => "2024-09-02 23:28:33",
+            ),
         );
 
         Permission::insert($permissions);
